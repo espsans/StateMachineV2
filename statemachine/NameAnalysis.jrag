@@ -1,0 +1,61 @@
+aspect NameAnalysis{
+
+    syn State Transition.source() = ((Machine)( getParent()).getParent()).lookup(getS1());
+    syn State Transition.target() = ((Machine)( getParent()).getParent()).lookup(getS2());
+
+    syn State Machine.lookup(String label) {
+
+        for(State s : getStatess()) {
+
+            State res = s.StateLookup(label);
+            if(res != null) return res;
+
+        }
+        return null;
+    }
+
+    syn State State.StateLookup(String label) {
+
+        if(getName().equals(label)) return this;
+        else return null;
+
+   }
+
+   syn boolean State.alreadyDecl() = ((Machine)( getParent()).getParent()).lookup(getName()) != this;
+
+   syn boolean Machine.usedLookup(String label) {
+
+           for(Transition t : getTransitionss()) {
+
+               if(t.source() != null && t.source().getName().equals(label))
+                    return true;
+               else if (t.target() != null && t.target().getName().equals(label))
+                    return true;
+           }
+           return false;
+   }
+
+   syn boolean State.used() = ((Machine)( getParent()).getParent()).usedLookup(getName());
+
+   coll Set<String> Machine.errors() [new HashSet<String>()] with add;
+
+   Transition contributes "ERROR Missing declaration of " + getS1()
+   when source() == null
+   to Machine.errors()
+   for ((Machine)((List) getParent()).getParent());
+
+   Transition contributes "ERROR Missing declaration of " + getS2()
+   when target() == null
+   to Machine.errors()
+   for ((Machine)((List) getParent()).getParent());
+
+   State contributes "ERROR " + getName() + " was already decleared"
+   when alreadyDecl()
+   to Machine.errors()
+   for ((Machine)((List) getParent()).getParent());
+
+    State contributes "WARNING " + getName() + " not used in any transition"
+    when !used()
+    to Machine.errors()
+    for ((Machine)((List) getParent()).getParent());
+}

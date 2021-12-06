@@ -1,0 +1,9 @@
+state S1;
+state S2;
+state S3;
+state S4;
+state S9;
+transition a = S1 -> S2;
+transition b = S2 -> S1;
+transition c = S2 -> S6;
+transition d = S5 -> S1;

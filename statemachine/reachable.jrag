@@ -1,0 +1,46 @@
+import java.util.*;
+
+aspect Reachable{
+
+    syn Set<State> State.successors(){
+
+        Set<State> result = new HashSet();
+        for (Transition t : ((Machine)((List) getParent()).getParent()).getTransitionss()) {
+            if (t.source() == this) {
+                if(t.target() != null)
+                    result.add(t.target());
+            }
+        }
+        return result;
+    }
+
+    syn Set<State> State.reachable() circular [new HashSet<State>()];
+
+    eq State.reachable() {
+        HashSet<State> result = new HashSet();
+
+        for (State s : successors()) {
+            result.add(s);
+            for (State state: ((Machine)( getParent()).getParent()).getStatess()){
+                if(state == this) result.addAll(state.reachable());
+            }
+
+        }
+        return result;
+    }
+
+
+    public void State.printReachable() {
+        if(!used()) return ;
+        System.out.print(getName() + " can reach {");
+        int i = 0;
+        for (State s : reachable()) {
+            if(i == 0)
+                System.out.print(s.getName());
+            else System.out.print(", " + s.getName());
+            i += 1;
+        }
+        System.out.println("}");
+    }
+
+}
